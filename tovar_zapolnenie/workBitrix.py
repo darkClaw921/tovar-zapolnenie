@@ -47,6 +47,23 @@ class Renewal: #товары
     serialNumber:str='ufCrm12_1717525290496'
     productName:str='ufCrm12_1717525467171'
     
+    UF_CRM_14_1719314433381='ufCrm14_1719314433381'
+
+@dataclass
+class Product_ENTY:
+    # id:str='ID'
+    assignedDeal:str='parentId2'
+    title:str='title'
+    priceZakyp:str='ufCrm14_1719314433381'
+    discount1:str='ufCrm14_1719314095902'
+    discount2:str='ufCrm14_1719314108491'
+    # description:str='DESCRIPTION'
+    # categoryID:str='CATEGORY_ID'
+    # statusID:str='STATUS_ID'
+    # responsibleID:str='ASSIGNED_BY_ID'
+    
+
+    
 # PAY_ENTY_ID=155
 # INVOICE_ID=31
 PAY_ENTY_ID=os.getenv('PAY_ENTY_ID')
@@ -55,8 +72,8 @@ NUMBER_INVOICE_POLE=os.getenv('NUMBER_INVOICE_POLE')
 DATE_INVOICE_POLE=os.getenv('DATE_INVOICE_POLE')
 POLE_INVOICE=os.getenv('POLE_INVOICE')
 
+RENEVAL_ENTY_ID=os.getenv('RENEVAL_ENTY_ID')
 TOVAR_ENTY_ID=os.getenv('TOVAR_ENTY_ID')
-
 
 
 
@@ -76,7 +93,7 @@ def find_invoice(number, date):
     return invoice
 
 def find_all_tovar_items(dealID):
-    items = bit.call('crm.item.list', items={'entityTypeId':TOVAR_ENTY_ID, 'filter': 
+    items = bit.call('crm.item.list', items={'entityTypeId':RENEVAL_ENTY_ID, 'filter': 
                                              {Renewal.assignedDeal:dealID}}, raw=True)['result']['items']
     return items
     
@@ -179,8 +196,12 @@ def create_product(fields:dict):
     bit.call('crm.product.add', items={'fields':fields},)
 
 def create_renewal(fields:dict):
-    renevalID=bit.call('crm.item.add', items={'entityTypeId':TOVAR_ENTY_ID, 'fields':fields})
+    renevalID=bit.call('crm.item.add', items={'entityTypeId':RENEVAL_ENTY_ID, 'fields':fields})
     return renevalID
+
+def create_tovar_entity(fields:dict):
+    tovarID=bit.call('crm.item.add', items={'entityTypeId':TOVAR_ENTY_ID, 'fields':fields})
+    return tovarID 
 
 def update_product(productID, fields:dict):
     bit.call('crm.product.update', items={'ID':productID, 'fields':fields})
@@ -269,10 +290,19 @@ def main(dealID:str=None):
             Renewal.serialNumber:quantity,
             Renewal.productName:product
         }
+        fieldsItemTovar={
+            Product_ENTY.assignedDeal:dealID,
+            Product_ENTY.title:product,
+            Product_ENTY.priceZakyp:quantity,
+            Product_ENTY.discount1:0,
+            Product_ENTY.discount2:0
+        }
         for _ in range(quantity):
             renewalID=create_renewal(fieldsItemReneweal)['id']
+            create_tovar_entity(fieldsItemTovar)
             print(f'{renewalID=}')
             newRenewasl.append(renewalID)
+
             # fields
             # update_deal()
             # print('create_renewal', fieldsItemReneweal)
@@ -299,14 +329,15 @@ def main(dealID:str=None):
     #     create_renewal(fieldsItemReneweal)    
     
 
-    # item=get_item(TOVAR_ENTY_ID,2204)
-    # pprint(item)
+
+# item=get_item(TOVAR_ENTY_ID,4)
+# pprint(item)
 
     
-
-# a=find_deal('17440')
+# dealID='17442'
+# a=find_deal(dealID=dealID)
 # pprint(a)
 
-# main(17440)
+# main(dealID=dealID)
 
 
